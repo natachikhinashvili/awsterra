@@ -1,1 +1,3 @@
 # awsterra
+
+## how to run
