@@ -1,0 +1,3 @@
+variable "repositoryname"{
+    type = string
+}
