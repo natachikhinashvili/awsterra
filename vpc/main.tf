@@ -20,3 +20,9 @@ resource "aws_db_subnet_group" "private_subnet_group" {
   name       = var.privatesubnet
   subnet_ids = module.vpc.private_subnets
 }
+
+resource "aws_security_group" "allowtraffic" {
+  name        = "allowtraffic"
+  description = "Allow TLS inbound traffic and all outbound traffic"
+  vpc_id      = vpc.id
+}
