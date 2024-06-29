@@ -19,6 +19,12 @@ module "ecr" {
   region = "eu-central-1"
 }
 
+module "security_group" {
+  source = "./security_group"
+  security_group_id = module.security_group.security_group_id
+  vpc_id =var.vpc_id
+}
+
 module "vpc" {
   source = "./vpc"
   vpcname = "natsvpc"
