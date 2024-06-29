@@ -12,7 +12,7 @@ module "natsvpc" {
   private_subnets      = ["10.0.3.0/24", "10.0.4.0/24"]
 
   enable_nat_gateway   = true
-  single_nat_gateway   = true  # Ensure this parameter is supported by your module version
+  single_nat_gateway   = true 
 }
 
 resource "aws_db_subnet_group" "public_subnet_group" {

@@ -4,9 +4,9 @@ resource "aws_db_instance" "main" {
   engine                  = "mysql"
   engine_version          = "8.0.35"  
   instance_class          = "db.t3.micro" 
-  db_name                 = "mydatabase"
-  username                = "admin"
-  password                = "password123"
+  db_name                 = var.db_name
+  username                = var.username
+  password                = var.password
   parameter_group_name    = "default.mysql8.0"
   db_subnet_group_name    = var.subnetgroup
   vpc_security_group_ids  = var.securitygroup

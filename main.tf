@@ -47,7 +47,9 @@ module "rds" {
     source             = "./rds"
     subnetgroup = var.publicsubnet
     securitygroup = [module.security_group.rds_security_group_id]
-    
+    db_name                 = var.db_name
+    username                = var.username
+    password                = var.password
 }
 module "load_balancer" {
     source             = "./alb"
