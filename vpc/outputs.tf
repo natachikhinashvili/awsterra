@@ -14,3 +14,12 @@ output "private_subnets" {
 output "public_subnet_group" {
   value = module.natsvpc.public_subnets
 }
+
+
+output "nat_gateway_id" {
+  value = module.natsvpc.private_nat_gateway_route_ids
+}
+
+output "internet_gateway_id" {
+  value = aws_internet_gateway.igw.id
+}
