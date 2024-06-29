@@ -41,6 +41,7 @@ module "ecs" {
     subnet = module.vpc.public_subnets
     repository_url = module.ecr.repository_url
     privatesubnet = module.vpc.public_subnets
+    nats_repo = module.ecr.repository_url
 }
 
 module "rds" {

@@ -61,6 +61,7 @@ resource "aws_autoscaling_group" "ecs" {
 }
 
 resource "aws_ecs_task_definition" "ecs_task" {
+  depends_on = [var.nats_repo]
   family                   = "my-ecs-task"
   execution_role_arn       = aws_iam_role.ecs_instance_role.arn
   network_mode             = "awsvpc" 

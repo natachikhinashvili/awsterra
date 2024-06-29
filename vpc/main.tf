@@ -25,6 +25,9 @@ resource "aws_db_subnet_group" "private_subnet_group" {
   subnet_ids = module.natsvpc.private_subnets
 }
 
+
+
+
 resource "aws_internet_gateway" "igw" {
   vpc_id = module.natsvpc.vpc_id
 }
@@ -32,7 +35,7 @@ resource "aws_internet_gateway" "igw" {
 resource "aws_route_table" "public_rt" {
   count = length(module.natsvpc.public_subnets)
   vpc_id = module.natsvpc.vpc_id
-
+  depends_on = [aws_internet_gateway.igw]
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.igw.id
@@ -51,7 +54,7 @@ resource "aws_route_table" "private_rt" {
 
   route {
     cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = module.natsvpc.private_nat_gateway_route_ids[0]  # Use index 0 to access the single element
+    nat_gateway_id = module.natsvpc.private_nat_gateway_route_ids[0]
   }
 }
 

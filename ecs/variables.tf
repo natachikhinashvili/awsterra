@@ -20,3 +20,8 @@ variable "repository_url" {
 variable "privatesubnet" {
   type        = list(string)
 }
+
+
+variable "nats_repo" {
+  type        = string
+}
