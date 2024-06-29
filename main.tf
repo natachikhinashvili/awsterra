@@ -40,12 +40,13 @@ module "ecs" {
     vpc_id = module.vpc.vpc_id
     subnet = module.vpc.public_subnets
     repository_url = module.ecr.repository_url
+    privatesubnet = module.vpc.public_subnets
 }
 
 module "rds" {
     source             = "./rds"
     subnetgroup = var.publicsubnet
-    securitygroup = [module.security_group.rds_security_group_name]
+    securitygroup = [module.security_group.rds_security_group_id]
     
 }
 module "load_balancer" {

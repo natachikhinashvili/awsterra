@@ -33,7 +33,7 @@ resource "aws_launch_configuration" "ecs" {
   instance_type               = "t2.micro"
   iam_instance_profile        = aws_iam_instance_profile.ecs_instance_profile.name
   security_groups             = [var.security_group_ids]
-  associate_public_ip_address = true
+  associate_public_ip_address = false 
 
   user_data = <<EOF
 #!/bin/bash
@@ -57,18 +57,14 @@ resource "aws_autoscaling_group" "ecs" {
   min_size             = 1
   max_size             = 1
   desired_capacity     = 1
-  vpc_zone_identifier  = var.subnet
-}
-
-output "ecs_cluster_name" {
-  value = aws_ecs_cluster.main.name
+  vpc_zone_identifier  = var.privatesubnet
 }
 
 resource "aws_ecs_task_definition" "ecs_task" {
   family                   = "my-ecs-task"
   execution_role_arn       = aws_iam_role.ecs_instance_role.arn
-  network_mode             = "bridge"  
-  requires_compatibilities = ["EC2"]  
+  network_mode             = "awsvpc" 
+  requires_compatibilities = ["EC2"]
 
   container_definitions = jsonencode([
     {
@@ -87,6 +83,7 @@ resource "aws_ecs_task_definition" "ecs_task" {
     }
   ])
 }
+
 resource "aws_ecs_service" "ecs_service" {
   name            = "my-ecs-service"
   cluster         = aws_ecs_cluster.main.id
@@ -99,7 +96,7 @@ resource "aws_ecs_service" "ecs_service" {
 
   network_configuration {
     security_groups = [var.security_group_ids]
-    subnets         = var.subnet
-    assign_public_ip = true
+    subnets         = var.privatesubnet 
+    assign_public_ip = false
   }
 }
