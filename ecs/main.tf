@@ -32,7 +32,7 @@ resource "aws_launch_configuration" "ecs" {
   image_id                    = data.aws_ami.ecs_optimized.id
   instance_type               = "t2.micro"
   iam_instance_profile        = aws_iam_instance_profile.ecs_instance_profile.name
-  security_groups             = [aws_security_group.ecs.id]
+  security_groups             = [var.security_group_ids]
   associate_public_ip_address = true
 
   user_data = <<EOF
@@ -57,13 +57,7 @@ resource "aws_autoscaling_group" "ecs" {
   min_size             = 1
   max_size             = 1
   desired_capacity     = 1
-  vpc_zone_identifier  = aws_subnet.subnet[*].id
-
-  tag {
-    key                 = "Name"
-    value               = "ecs_instance"
-    propagate_at_launch = true
-  }
+  vpc_zone_identifier  = var.subnet
 }
 
 output "ecs_cluster_name" {
