@@ -30,6 +30,7 @@ resource "aws_internet_gateway" "igw" {
 }
 
 resource "aws_route_table" "public_rt" {
+  count = length(module.natsvpc.public_subnets)
   vpc_id = module.natsvpc.vpc_id
 
   route {
@@ -41,20 +42,21 @@ resource "aws_route_table" "public_rt" {
 resource "aws_route_table_association" "public_rt_assoc" {
   count          = length(module.natsvpc.public_subnets)
   subnet_id      = element(module.natsvpc.public_subnets, count.index)
-  route_table_id = aws_route_table.public_rt.id
+  route_table_id = aws_route_table.public_rt[count.index].id
 }
 
 resource "aws_route_table" "private_rt" {
+  count = length(module.natsvpc.private_subnets)
   vpc_id = module.natsvpc.vpc_id
 
   route {
     cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = module.natsvpc.private_nat_gateway_route_ids[0]
+    nat_gateway_id = module.natsvpc.private_nat_gateway_route_ids[0]  # Use index 0 to access the single element
   }
 }
 
 resource "aws_route_table_association" "private_rt_assoc" {
   count          = length(module.natsvpc.private_subnets)
   subnet_id      = element(module.natsvpc.private_subnets, count.index)
-  route_table_id = aws_route_table.private_rt.id
+  route_table_id = aws_route_table.private_rt[count.index].id
 }

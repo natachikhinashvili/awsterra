@@ -7,3 +7,7 @@ variable "vpc_id" {
   description = "The vpc ID to associate with the load balancer"
   type        = string
 }
+
+variable "subnets" {
+  type        = list(string)
+}

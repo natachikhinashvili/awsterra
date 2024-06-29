@@ -3,7 +3,7 @@ resource "aws_lb" "nodeapp_lb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [var.security_group_id]
-  subnets            = ["subnet-062c580ab0771b9e8", "subnet-01262f7482a68dc41"]
+  subnets            = var.subnets
 }
 
 resource "aws_lb_target_group" "nodeapp_tg" {

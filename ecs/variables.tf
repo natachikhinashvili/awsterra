@@ -6,3 +6,12 @@ variable "security_group_ids" {
 variable "subnet" {
   type        = list(string)
 }
+
+variable "vpc_id" {
+  type        = string
+}
+
+
+variable "repository_url" {
+  type        = string
+}
