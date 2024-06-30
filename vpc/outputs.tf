@@ -18,7 +18,3 @@ output "public_subnet_group" {
 output "nat_gateway_id" {
   value = module.natsvpc.private_nat_gateway_route_ids
 }
-
-output "internet_gateway_id" {
-  value = aws_internet_gateway.igw.id
-}

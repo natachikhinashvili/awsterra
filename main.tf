@@ -46,6 +46,7 @@ module "ecs" {
 
 module "rds" {
     source             = "./rds"
+    depends_on = [ module.vpc ]
     subnetgroup = var.publicsubnet
     securitygroup = [module.security_group.rds_security_group_id]
     db_name                 = var.db_name
