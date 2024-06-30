@@ -56,7 +56,7 @@ module "rds" {
 }
 module "load_balancer" {
     source             = "./alb"
-    security_group_id = module.security_group.security_group_id
+    security_group_id = module.security_group.alb_security_group
     vpc_id = module.vpc.vpc_id
     subnets = module.vpc.public_subnet_group
 }
