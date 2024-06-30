@@ -35,9 +35,9 @@ resource "aws_autoscaling_group" "failure_analysis_ecs_asg" {
   name                = "asg"
   vpc_zone_identifier = var.privatesubnet
 
-  desired_capacity          = 2
+  desired_capacity          = 1
   min_size                  = 1
-  max_size                  = 2
+  max_size                  = 1
   health_check_grace_period = 300
   health_check_type         = "EC2"
 
@@ -50,7 +50,7 @@ resource "aws_autoscaling_group" "failure_analysis_ecs_asg" {
 resource "aws_launch_template" "engine" {
   name          = "alma"
   image_id      = data.aws_ssm_parameter.ecs_node_ami.value
-  instance_type = "t2.micro"
+  instance_type = "t3.medium"
   user_data     = base64encode("#!/bin/bash\necho ECS_CLUSTER=my-cluster >> /etc/ecs/ecs.config")
   
   iam_instance_profile {
@@ -87,13 +87,14 @@ resource "aws_ecs_cluster_capacity_providers" "ecs_cluster_capacity_providers" {
 resource "aws_ecs_task_definition" "task_definition" {
   family = "worker"
   network_mode             = "awsvpc"
+  requires_compatibilities = ["EC2"]
+  memory      = 2048
+  cpu       = 1024
 
   container_definitions = jsonencode([
     {
       essential   = true
-      memory      = 2048
       name        = "worker"
-      cpu       = 1024
       image       = "${var.repository_url}:latest"
       portMappings = [
         {
@@ -119,7 +120,6 @@ resource "aws_ecs_service" "worker" {
   network_configuration {
     security_groups = [var.security_group_ids]
     subnets         = var.privatesubnet 
-    assign_public_ip = false
   }
 
   load_balancer {
