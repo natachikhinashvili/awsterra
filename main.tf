@@ -42,6 +42,7 @@ module "ecs" {
     repository_url = module.ecr.repository_url
     privatesubnet = module.vpc.public_subnets
     nats_repo = module.ecr.repository_url
+    aws_lb_target_group_arn = module.load_balancer.aws_lb_target_group_arn
 }
 
 module "rds" {

@@ -8,7 +8,7 @@ resource "aws_lb" "nodeapp_lb" {
 
 resource "aws_lb_target_group" "nodeapp_tg" {
   name     = "nodeapp-tg"
-  port     = 3000
+  port     = 80
   protocol = "HTTP"
   vpc_id   = var.vpc_id
 
@@ -20,7 +20,7 @@ resource "aws_lb_target_group" "nodeapp_tg" {
     timeout             = 5
     unhealthy_threshold = 2
     healthy_threshold   = 2
-    matcher             = "200"
+    matcher             = "200-499"
   }
 }
 

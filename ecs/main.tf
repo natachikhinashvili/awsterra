@@ -27,6 +27,8 @@ resource "aws_ecs_cluster" "main" {
   name = "main_ecs_cluster"
 }
 
+
+
 resource "aws_launch_configuration" "ecs" {
   name                        = "ecs_launch_configuration"
   image_id                    = data.aws_ami.ecs_optimized.id
@@ -51,6 +53,20 @@ data "aws_ami" "ecs_optimized" {
 
   owners = ["amazon"]
 }
+resource "aws_instance" "ec2_instance" {
+  ami                    = "data.aws_ami.ecs_optimized.id"
+  subnet_id              = var.privatesubnet[0]
+  instance_type          = "t2.micro"
+  iam_instance_profile   = aws_iam_instance_profile.ecs_instance_profile.name
+  vpc_security_group_ids = [var.security_group_ids]
+  ebs_optimized          = "false"
+  source_dest_check      = "false"
+  root_block_device {
+    volume_type           = "gp2"
+    volume_size           = "30"
+    delete_on_termination = "true"
+  }
+}
 
 resource "aws_autoscaling_group" "ecs" {
   launch_configuration = aws_launch_configuration.ecs.id
@@ -61,7 +77,7 @@ resource "aws_autoscaling_group" "ecs" {
 }
 
 resource "aws_ecs_task_definition" "ecs_task" {
-  depends_on = [var.nats_repo]
+  depends_on = [var.nats_repo, aws_instance.ec2_instance]
   family                   = "my-ecs-task"
   execution_role_arn       = aws_iam_role.ecs_instance_role.arn
   network_mode             = "awsvpc" 
@@ -69,7 +85,7 @@ resource "aws_ecs_task_definition" "ecs_task" {
 
   container_definitions = jsonencode([
     {
-      name      = "my-container"
+      name      = "nodeapp"
       image     = "${var.repository_url}:latest"
       cpu       = 256
       memory    = 512
@@ -86,10 +102,12 @@ resource "aws_ecs_task_definition" "ecs_task" {
 }
 
 resource "aws_ecs_service" "ecs_service" {
+  depends_on = [var.nats_repo, aws_instance.ec2_instance, aws_ecs_task_definition.ecs_task]
   name            = "my-ecs-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.ecs_task.arn
-  desired_count   = 1
+  desired_count   = 1                             
+  launch_type     = "EC2"  
 
   deployment_controller {
     type = "ECS"
@@ -99,5 +117,10 @@ resource "aws_ecs_service" "ecs_service" {
     security_groups = [var.security_group_ids]
     subnets         = var.privatesubnet 
     assign_public_ip = false
+  }
+  load_balancer {
+    target_group_arn = var.aws_lb_target_group_arn
+    container_name   = "nodeapp"
+    container_port   = 80
   }
 }
