@@ -89,9 +89,9 @@ resource "aws_ecs_task_definition" "task_definition" {
   container_definitions = jsonencode([
     {
       essential   = true
-      memory      = 2012
+      memory      = 2048
       name        = "worker"
-      cpu       = 1056
+      cpu       = 1024
       image       = "${var.repository_url}:latest"
       portMappings = [
         {
