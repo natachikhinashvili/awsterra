@@ -27,57 +27,61 @@ resource "aws_ecs_cluster" "main" {
   name = "main_ecs_cluster"
 }
 
-
-
-resource "aws_launch_configuration" "ecs" {
-  name                        = "ecs_launch_configuration"
-  image_id                    = data.aws_ami.ecs_optimized.id
-  instance_type               = "t2.micro"
-  iam_instance_profile        = aws_iam_instance_profile.ecs_instance_profile.name
-  security_groups             = [var.security_group_ids]
-  associate_public_ip_address = false 
-
-  user_data = <<EOF
-#!/bin/bash
-echo ECS_CLUSTER=${aws_ecs_cluster.main.name} >> /etc/ecs/ecs.config
-EOF
+data "aws_ssm_parameter" "ecs_node_ami" {
+  name = "/aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id"
 }
 
-data "aws_ami" "ecs_optimized" {
-  most_recent = true
+resource "aws_launch_template" "engine" {
+  name          = "alma"
+  image_id      = data.aws_ssm_parameter.ecs_node_ami.value
+  instance_type = "t2.large"
+  user_data     = base64encode("#!/bin/bash\necho ECS_CLUSTER=my-cluster >> /etc/ecs/ecs.config")
 
-  filter {
-    name   = "name"
-    values = ["amzn-ami-*-amazon-ecs-optimized"]
-  }
-
-  owners = ["amazon"]
-}
-resource "aws_instance" "ec2_instance" {
-  ami                    = "data.aws_ami.ecs_optimized.id"
-  subnet_id              = var.privatesubnet[0]
-  instance_type          = "t2.micro"
-  iam_instance_profile   = aws_iam_instance_profile.ecs_instance_profile.name
   vpc_security_group_ids = [var.security_group_ids]
-  ebs_optimized          = "false"
-  source_dest_check      = "false"
-  root_block_device {
-    volume_type           = "gp2"
-    volume_size           = "30"
-    delete_on_termination = "true"
+  iam_instance_profile {
+    name = aws_iam_instance_profile.ecs_instance_profile.name
+  }
+  
+}
+
+resource "aws_autoscaling_group" "failure_analysis_ecs_asg" {
+  name                = "asg"
+  vpc_zone_identifier = var.privatesubnet
+
+  desired_capacity          = 1
+  min_size                  = 1
+  max_size                  = 10
+  health_check_grace_period = 300
+  health_check_type         = "EC2"
+
+  launch_template {
+    id = aws_launch_template.engine.id
   }
 }
 
-resource "aws_autoscaling_group" "ecs" {
-  launch_configuration = aws_launch_configuration.ecs.id
-  min_size             = 1
-  max_size             = 1
-  desired_capacity     = 1
-  vpc_zone_identifier  = var.privatesubnet
+resource "aws_ecs_capacity_provider" "provider" {
+  name = "alma"
+  auto_scaling_group_provider {
+    auto_scaling_group_arn = aws_autoscaling_group.failure_analysis_ecs_asg.arn
+
+    managed_scaling {
+      status                    = "ENABLED"
+      target_capacity           = 100
+      minimum_scaling_step_size = 1
+      maximum_scaling_step_size = 100
+    }
+  }
 }
+
+
+resource "aws_ecs_cluster_capacity_providers" "providers" {
+  cluster_name       = aws_ecs_cluster.main.name
+  capacity_providers = [aws_ecs_capacity_provider.provider.name]
+}
+
 
 resource "aws_ecs_task_definition" "ecs_task" {
-  depends_on = [var.nats_repo, aws_instance.ec2_instance]
+  depends_on = [var.nats_repo]
   family                   = "my-ecs-task"
   execution_role_arn       = aws_iam_role.ecs_instance_role.arn
   network_mode             = "awsvpc" 
@@ -102,7 +106,7 @@ resource "aws_ecs_task_definition" "ecs_task" {
 }
 
 resource "aws_ecs_service" "ecs_service" {
-  depends_on = [var.nats_repo, aws_instance.ec2_instance, aws_ecs_task_definition.ecs_task]
+  depends_on = [var.nats_repo, aws_ecs_task_definition.ecs_task]
   name            = "my-ecs-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.ecs_task.arn
