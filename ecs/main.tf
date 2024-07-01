@@ -40,17 +40,6 @@ resource "aws_ecs_cluster" "ecs_cluster" {
   name = "my-cluster"
 }
 
-resource "aws_autoscaling_group" "ecs_asg" {
- vpc_zone_identifier = var.privatesubnet
- desired_capacity    = 1
- max_size            = 1
- min_size            = 1
-
- launch_template {
-   id      = aws_launch_template.ecs_lt.id
-   version = "$Latest"
- }
-}
 resource "aws_launch_template" "ecs_lt" {
  name_prefix   = "ecs-template"
  image_id      = data.aws_ami.ecs_ami.image_id
@@ -70,6 +59,19 @@ resource "aws_launch_template" "ecs_lt" {
  }
  user_data =  base64encode("#!/bin/bash\n echo ECS_CLUSTER=my-cluster >> /etc/ecs/ecs.config")
 }
+
+resource "aws_autoscaling_group" "ecs_asg" {
+ vpc_zone_identifier = var.privatesubnet
+ desired_capacity    = 1
+ max_size            = 1
+ min_size            = 1
+
+ launch_template {
+   id      = aws_launch_template.ecs_lt.id
+   version = "$Latest"
+ }
+}
+
 resource "aws_ecs_capacity_provider" "ecs_capacity_provider" {
  name = "test1"
 
@@ -101,6 +103,7 @@ resource "aws_ecs_task_definition" "task_definition" {
   requires_compatibilities = ["EC2"]
   task_role_arn = "arn:aws:iam::850286438394:role/ecsTaskExecutionRole"
   execution_role_arn = "arn:aws:iam::850286438394:role/ecsTaskExecutionRole"
+  
   cpu       = 256
   runtime_platform {
    operating_system_family = "LINUX"
