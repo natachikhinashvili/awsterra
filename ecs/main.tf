@@ -30,6 +30,11 @@ resource "aws_iam_role_policy_attachment" "ecs_instance_role_policy" {
   role       = aws_iam_role.ecs_instance_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
 }
+
+resource "aws_iam_role_policy_attachment" "ecr_policy_attachment" {
+  role       = aws_iam_role.ecs_instance_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
+}
 resource "aws_iam_instance_profile" "ecs_instance_profile" {
   name = "ecs_instance_profile"
   role = aws_iam_role.ecs_instance_role.name
@@ -41,24 +46,27 @@ resource "aws_ecs_cluster" "ecs_cluster" {
 }
 
 resource "aws_launch_template" "ecs_lt" {
- name_prefix   = "ecs-template"
- image_id      = data.aws_ami.ecs_ami.image_id
- instance_type = "t3.micro"
+  name_prefix   = "ecs-template"
+  image_id      = data.aws_ami.ecs_ami.image_id
+  instance_type = "t3.micro"
 
- vpc_security_group_ids = [var.security_group_ids]
- iam_instance_profile {
-   name = "ecsInstanceRole"
- }
+  vpc_security_group_ids = [var.security_group_ids]
+  
+  iam_instance_profile {
+    name = "ecsInstanceRole"
+  }
 
- block_device_mappings {
-   device_name = "/dev/xvda"
-   ebs {
-     volume_size = 30
-     volume_type = "gp2"
-   }
- }
- user_data =  base64encode("#!/bin/bash\n echo ECS_CLUSTER=my-cluster >> /etc/ecs/ecs.config")
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      volume_size = 30
+      volume_type = "gp2"
+    }
+  }
+
+  user_data = base64encode("#!/bin/bash\n echo ECS_CLUSTER=my-cluster >> /etc/ecs/ecs.config")
 }
+
 
 resource "aws_autoscaling_group" "ecs_asg" {
  vpc_zone_identifier = var.privatesubnet
@@ -132,10 +140,10 @@ resource "aws_ecs_service" "ecs_service" {
  name            = "my-ecs-service"
  cluster         = aws_ecs_cluster.ecs_cluster.id
  task_definition = aws_ecs_task_definition.task_definition.arn 
- desired_count   = 2
+ desired_count   = 1
 
  network_configuration {
-   subnets         = var.privatesubnet 
+   subnets         = var.privatesubnet
    security_groups = [var.security_group_ids]
  }
 
