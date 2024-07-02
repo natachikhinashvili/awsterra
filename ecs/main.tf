@@ -64,6 +64,11 @@ resource "aws_launch_template" "ecs_lt" {
     }
   }
 
+  network_interfaces {
+    associate_public_ip_address = true
+    security_groups = [var.security_group_ids]
+  }
+
   user_data = base64encode("#!/bin/bash\n echo ECS_CLUSTER=my-cluster >> /etc/ecs/ecs.config")
 }
 
@@ -111,8 +116,6 @@ resource "aws_ecs_task_definition" "task_definition" {
   requires_compatibilities = ["EC2"]
   task_role_arn = "arn:aws:iam::850286438394:role/ecsTaskExecutionRole"
   execution_role_arn = "arn:aws:iam::850286438394:role/ecsTaskExecutionRole"
-  
-  cpu       = 256
   runtime_platform {
    operating_system_family = "LINUX"
    cpu_architecture        = "X86_64"
@@ -131,7 +134,14 @@ resource "aws_ecs_task_definition" "task_definition" {
           hostPort      = 3000
           protocol      = "tcp"
         }
-      ]
+      ],
+      healthcheck = {
+        command     = ["CMD-SHELL", "curl -f http://localhost/ || exit 1"]
+        interval    = 30
+        retries     = 3
+        startPeriod = 60
+        timeout     = 5
+      },
     }
   ])
 }
