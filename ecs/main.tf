@@ -120,21 +120,14 @@ resource "aws_ecs_task_definition" "task_definition" {
       name        = "natscontainer"
       cpu       = 256
       memory    = 512
-      image       = "${var.repository_url}:latest"
+      image       = "850286438394.dkr.ecr.eu-central-1.amazonaws.com/creed:latest"
       portMappings = [
         {
-          containerPort = 3000
-          hostPort      = 3000
+          containerPort = 80
+          hostPort      = 80
           protocol      = "tcp"
         }
-      ],
-      healthcheck = {
-        command     = ["CMD-SHELL", "curl -f http://localhost/ || exit 1"]
-        interval    = 30
-        retries     = 3
-        startPeriod = 60
-        timeout     = 5
-      },
+      ]
     }
   ])
 }
@@ -164,7 +157,7 @@ resource "aws_ecs_service" "ecs_service" {
  load_balancer {
    target_group_arn = var.aws_lb_target_group_arn
    container_name   = "natscontainer"
-   container_port   = 3000
+   container_port   = 80
  }
 
  depends_on = [aws_autoscaling_group.ecs_asg]
