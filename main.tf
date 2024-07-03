@@ -12,6 +12,15 @@ terraform {
     }
 }
 
+data "aws_secretsmanager_secret_version" "creds" {
+  secret_id = "database-creds"
+}
+
+locals {
+  db_creds = jsondecode(
+    data.aws_secretsmanager_secret_version.creds.secret_string
+  )
+}
 
 module "ecr" {
   source = "./ecr"
@@ -41,7 +50,7 @@ module "ecs" {
     subnet = module.vpc.public_subnets
     repository_url = module.ecr.repository_url
     privatesubnet = module.vpc.public_subnets
-    nats_repo = module.ecr.repository_url
+    nats_repo =  module.ecr.repository_url
     aws_lb_target_group_arn = module.load_balancer.aws_lb_target_group_arn
 }
 
@@ -51,8 +60,8 @@ module "rds" {
     subnetgroup = var.publicsubnet
     securitygroup = [module.security_group.rds_security_group_id]
     db_name                 = var.db_name
-    username                = var.username
-    password                = var.password
+    username                = local.db_creds.username
+    password                = local.db_creds.password
 }
 module "load_balancer" {
     source             = "./alb"
