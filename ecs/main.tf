@@ -1,11 +1,5 @@
-data "aws_ami" "ecs_ami" {
-  most_recent = true
-  owners      = ["amazon"]
-
-  filter {
-    name   = "name"
-    values = ["amzn2-ami-ecs-hvm-*-x86_64-ebs"]
-  }
+data "aws_ssm_parameter" "ecs_optimized_ami" {
+  name = "/aws/service/ecs/optimized-ami/amazon-linux-2/recommended"
 }
 
 resource "aws_iam_role" "ecs_instance_role" {
@@ -45,12 +39,11 @@ resource "aws_ecs_cluster" "ecs_cluster" {
   name = "my-cluster"
 }
 
+
 resource "aws_launch_template" "ecs_lt" {
   name_prefix   = "ecs-template"
-  image_id      = data.aws_ami.ecs_ami.image_id
+  image_id      = jsondecode(data.aws_ssm_parameter.ecs_optimized_ami.value)["image_id"]
   instance_type = "t3.micro"
-
-  vpc_security_group_ids = [var.security_group_ids]
   
   iam_instance_profile {
     name = "ecsInstanceRole"
@@ -86,16 +79,16 @@ resource "aws_autoscaling_group" "ecs_asg" {
 }
 
 resource "aws_ecs_capacity_provider" "ecs_capacity_provider" {
- name = "test1"
+ name = "natscapacityprovider"
 
   auto_scaling_group_provider {
     auto_scaling_group_arn = aws_autoscaling_group.ecs_asg.arn
 
     managed_scaling {
-      maximum_scaling_step_size = 1000
+      maximum_scaling_step_size = 5
       minimum_scaling_step_size = 1
       status                    = "ENABLED"
-      target_capacity           = 3
+      target_capacity           = 60
     }
   }
 }
@@ -124,7 +117,7 @@ resource "aws_ecs_task_definition" "task_definition" {
   container_definitions = jsonencode([
     {
       essential   = true
-      name        = "worker"
+      name        = "natscontainer"
       cpu       = 256
       memory    = 512
       image       = "${var.repository_url}:latest"
@@ -147,7 +140,7 @@ resource "aws_ecs_task_definition" "task_definition" {
 }
 
 resource "aws_ecs_service" "ecs_service" {
- name            = "my-ecs-service"
+ name            = "nats-service"
  cluster         = aws_ecs_cluster.ecs_cluster.id
  task_definition = aws_ecs_task_definition.task_definition.arn 
  desired_count   = 1
@@ -164,12 +157,13 @@ resource "aws_ecs_service" "ecs_service" {
 
  capacity_provider_strategy {
    capacity_provider = aws_ecs_capacity_provider.ecs_capacity_provider.name
+   base = 1
    weight            = 100
  }
 
  load_balancer {
    target_group_arn = var.aws_lb_target_group_arn
-   container_name   = "worker"
+   container_name   = "natscontainer"
    container_port   = 3000
  }
 

@@ -6,7 +6,7 @@ terraform {
         }
     }
     backend "s3" {
-        bucket = "natsrepo"
+        bucket = "natsbackend"
         key    = "backend.tfstate"
         region = "eu-central-1"
     }
