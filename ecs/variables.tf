@@ -21,11 +21,6 @@ variable "privatesubnet" {
   type        = list(string)
 }
 
-
-variable "nats_repo" {
-  type        = string
-}
-
 variable "aws_lb_target_group_arn" {
   description = "target group arn"
   type        = string
