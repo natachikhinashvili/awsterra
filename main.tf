@@ -25,15 +25,15 @@ locals {
 module "ecr" {
   source = "./ecr"
   repositoryname="natsrepo"
-  region = "eu-central-1"
+  region = var.region
 }
 
 module "vpc" {
   source = "./vpc"
-  vpcname = "natsvpc"
-  publicsubnet = "db-subnet-group-public"
-  privatesubnet = "db-subnet-group-private"
-  azs =  ["eu-central-1a", "eu-central-1b", "eu-central-1c"]
+  vpcname = var.vpcname
+  publicsubnet = var.publicsubnet
+  privatesubnet = var.privatesubnet
+  azs =  var.azs
 }
 
 module "security_group" {
@@ -47,10 +47,9 @@ module "ecs" {
     source             = "./ecs"
     security_group_ids = module.security_group.security_group_id
     vpc_id = module.vpc.vpc_id
-    subnet = module.vpc.public_subnets
     repository_url = module.ecr.repository_url
     privatesubnet = module.vpc.public_subnets
-    nats_repo =  module.ecr.repository_url
+    subnet = module.vpc.public_subnets
     aws_lb_target_group_arn = module.load_balancer.aws_lb_target_group_arn
 }
 

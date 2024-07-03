@@ -36,7 +36,7 @@ resource "aws_iam_instance_profile" "ecs_instance_profile" {
 
 
 resource "aws_ecs_cluster" "ecs_cluster" {
-  name = "my-cluster"
+  name = "nats-cluster"
 }
 
 
@@ -62,7 +62,7 @@ resource "aws_launch_template" "ecs_lt" {
     security_groups = [var.security_group_ids]
   }
 
-  user_data = base64encode("#!/bin/bash\n echo ECS_CLUSTER=my-cluster >> /etc/ecs/ecs.config")
+  user_data = base64encode("#!/bin/bash\n echo ECS_CLUSTER=nats-cluster >> /etc/ecs/ecs.config")
 }
 
 
