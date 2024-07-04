@@ -123,7 +123,7 @@ resource "aws_ecs_task_definition" "task_definition" {
       name        = "natscontainer"
       cpu       = 256
       memory    = 512
-      image       = "${var.repository_url}:latest"
+      image       = "850286438394.dkr.ecr.eu-central-1.amazonaws.com/creed:latest"
       portMappings = [
         {
           containerPort = 80
