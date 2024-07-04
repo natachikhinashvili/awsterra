@@ -16,10 +16,12 @@ resource "aws_iam_role" "ecs_instance_role" {
     }]
   })
 }
+
 resource "aws_iam_role_policy_attachment" "ecs_attach" {
   role       = aws_iam_role.ecs_instance_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
 }
+
 resource "aws_iam_role_policy_attachment" "ecs_instance_role_policy" {
   role       = aws_iam_role.ecs_instance_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
@@ -29,6 +31,7 @@ resource "aws_iam_role_policy_attachment" "ecr_policy_attachment" {
   role       = aws_iam_role.ecs_instance_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
 }
+
 resource "aws_iam_instance_profile" "ecs_instance_profile" {
   name = "ecs_instance_profile"
   role = aws_iam_role.ecs_instance_role.name
@@ -120,7 +123,7 @@ resource "aws_ecs_task_definition" "task_definition" {
       name        = "natscontainer"
       cpu       = 256
       memory    = 512
-      image       = "850286438394.dkr.ecr.eu-central-1.amazonaws.com/creed:latest"
+      image       = "${var.repository_url}:latest"
       portMappings = [
         {
           containerPort = 80
