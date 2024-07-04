@@ -1,3 +1,3 @@
 # awsterra
 
-![terraformgraph]('./graph.png')
+![terraformgraph](./graph.png)
