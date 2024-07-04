@@ -1,3 +1,1 @@
 # awsterra
-
-![terraformgraph](./graph.png)
