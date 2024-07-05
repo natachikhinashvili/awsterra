@@ -1,5 +1,5 @@
 resource "aws_ecr_repository" "nats_repo" {
-  name = var.repositoryname
+  name = "natsrepo"
 }
 
 resource "null_resource" "docker_build_and_push" {

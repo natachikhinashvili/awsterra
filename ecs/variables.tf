@@ -21,6 +21,5 @@ variable "privatesubnet" {
 }
 
 variable "aws_lb_target_group_arn" {
-  description = "target group arn"
   type        = string
 }
