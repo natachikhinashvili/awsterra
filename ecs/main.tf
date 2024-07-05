@@ -49,7 +49,7 @@ resource "aws_launch_template" "ecs_lt" {
   instance_type = "t3.micro"
 
   iam_instance_profile {
-    name = "ecsInstanceRole"
+    name = aws_iam_instance_profile.ecs_instance_profile.name
   }
 
   block_device_mappings {
