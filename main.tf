@@ -54,6 +54,8 @@ module "ecs" {
   container_name = var.container_name
   service_name = var.service_name
   capacityprovidername = var.capacityprovidername
+  cluster_name = var.cluster_name
+  template_name = var.template_name
 }
 
 module "rds" {

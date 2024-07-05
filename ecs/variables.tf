@@ -34,6 +34,14 @@ variable "container_name" {
   type = string
 }
 
+variable "cluster_name" {
+  type = string
+}
+
 variable "capacityprovidername" {
+  type = string
+}
+
+variable "template_name" {
   type = string
 }

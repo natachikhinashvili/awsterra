@@ -39,12 +39,12 @@ resource "aws_iam_instance_profile" "ecs_instance_profile" {
 
 
 resource "aws_ecs_cluster" "ecs_cluster" {
-  name = "nats-cluster"
+  name = var.cluster_name
 }
 
 
 resource "aws_launch_template" "ecs_lt" {
-  name_prefix   = "ecs-template"
+  name_prefix   = var.template_name
   image_id      = jsondecode(data.aws_ssm_parameter.ecs_optimized_ami.value)["image_id"]
   instance_type = "t3.micro"
 

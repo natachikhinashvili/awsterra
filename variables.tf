@@ -37,3 +37,11 @@ variable "capacityprovidername" {
 variable "repositoryname" {
   type = string
 }
+
+variable "cluster_name" {
+  type = string
+}
+
+variable "template_name" {
+  type = string
+}
