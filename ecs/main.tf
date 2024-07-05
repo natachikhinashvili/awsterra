@@ -33,18 +33,18 @@ resource "aws_iam_role_policy_attachment" "ecr_policy_attachment" {
 }
 
 resource "aws_iam_instance_profile" "ecs_instance_profile" {
-  name = var.instanceprofilename
+  name = "ecs_instance_profile"
   role = aws_iam_role.ecs_instance_role.name
 }
 
 
 resource "aws_ecs_cluster" "ecs_cluster" {
-  name = var.cluster_name
+  name = "natscluster"
 }
 
 
 resource "aws_launch_template" "ecs_lt" {
-  name_prefix   = var.template_name
+  name_prefix   = "natstemplate"
   image_id      = jsondecode(data.aws_ssm_parameter.ecs_optimized_ami.value)["image_id"]
   instance_type = "t3.micro"
 
@@ -82,7 +82,7 @@ resource "aws_autoscaling_group" "ecs_asg" {
 }
 
 resource "aws_ecs_capacity_provider" "ecs_capacity_provider" {
-  name = var.capacityprovidername
+  name = "natscapacityprovider"
 
   auto_scaling_group_provider {
     auto_scaling_group_arn = aws_autoscaling_group.ecs_asg.arn
@@ -107,7 +107,7 @@ resource "aws_ecs_cluster_capacity_providers" "ecs_cluster_capacity_providers" {
 }
 
 resource "aws_ecs_task_definition" "task_definition" {
-  family                   = var.container_name
+  family                   = "nats-container"
   network_mode             = "awsvpc"
   requires_compatibilities = ["EC2"]
   task_role_arn            = "arn:aws:iam::850286438394:role/ecsTaskExecutionRole"
@@ -120,7 +120,7 @@ resource "aws_ecs_task_definition" "task_definition" {
   container_definitions = jsonencode([
     {
       essential = true
-      name      = var.container_name
+      name      = "nats-container"
       cpu       = 256
       memory    = 512
       image     = "850286438394.dkr.ecr.eu-central-1.amazonaws.com/creed:latest"
@@ -136,7 +136,7 @@ resource "aws_ecs_task_definition" "task_definition" {
 }
 
 resource "aws_ecs_service" "ecs_service" {
-  name            = var.service_name
+  name            = "nats-service"
   cluster         = aws_ecs_cluster.ecs_cluster.id
   task_definition = aws_ecs_task_definition.task_definition.arn
   desired_count   = 1
@@ -159,7 +159,7 @@ resource "aws_ecs_service" "ecs_service" {
 
   load_balancer {
     target_group_arn = var.aws_lb_target_group_arn
-    container_name   = var.container_name
+    container_name   = "nats-container"
     container_port   = 80
   }
 

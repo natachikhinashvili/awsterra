@@ -24,13 +24,11 @@ locals {
 
 module "ecr" {
   source         = "./ecr"
-  repositoryname = var.repositoryname
   region         = var.region
 }
 
 module "vpc" {
   source        = "./vpc"
-  vpcname       = var.vpcname
   publicsubnet  = var.publicsubnet
   privatesubnet = var.privatesubnet
   azs           = var.azs
@@ -50,12 +48,6 @@ module "ecs" {
   privatesubnet           = module.vpc.public_subnets
   subnet                  = module.vpc.public_subnets
   aws_lb_target_group_arn = module.load_balancer.aws_lb_target_group_arn
-  container_name = var.container_name
-  service_name = var.service_name
-  capacityprovidername = var.capacityprovidername
-  cluster_name = var.cluster_name
-  template_name = var.template_name
-  instanceprofilename = var.instanceprofilename
 }
 
 module "rds" {
@@ -65,7 +57,6 @@ module "rds" {
   securitygroup = [module.security_group.rds_security_group_id]
   username      = local.db_creds.username
   password      = local.db_creds.password
-  db_name       = var.db_name
 }
 module "load_balancer" {
   source            = "./alb"

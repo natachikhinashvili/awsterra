@@ -12,4 +12,5 @@ variable "password" {
 }
 variable "db_name" {
   type = string
+  default = "natsdb"
 }
