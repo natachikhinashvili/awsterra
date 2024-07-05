@@ -1,3 +1,7 @@
+module "secretsmanager" {
+  source        = "./secretsmanager"
+}
+
 module "ecr" {
   source         = "./ecr"
   region         = var.region
@@ -38,6 +42,6 @@ module "rds" {
   depends_on    = [module.vpc]
   subnetgroup   = var.publicsubnet
   securitygroup = [module.security_group.rds_security_group_id]
-  username      = local.db_creds.username
+  username      = "admin"
   password      = local.db_creds.password
 }
