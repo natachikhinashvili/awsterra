@@ -1,27 +1,27 @@
 variable "region" {
-    type = string
+  type = string
 }
 variable "azs" {
-  type    = list(string)
+  type = list(string)
 }
 
 variable "publicsubnet" {
-  type    = string
+  type = string
 }
 
 variable "privatesubnet" {
-  type    = string
+  type = string
 }
 
 variable "vpcname" {
-  type    = string
+  type = string
 }
 variable "db_name" {
-    type = string
+  type = string
 }
 variable "username" {
-    type = string
+  type = string
 }
 variable "password" {
-    type = string
+  type = string
 }
