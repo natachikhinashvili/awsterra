@@ -30,8 +30,6 @@ resource "aws_launch_template" "ecs_lt" {
 
   user_data = base64encode(<<-EOF
     #!/bin/bash
-    sudo apt-get update -y
-    sudo apt-get install -y nodejs npm
     echo ECS_CLUSTER=nats-cluster >> /etc/ecs/ecs.config
   EOF
   )
@@ -89,9 +87,8 @@ module "autoscaling" {
         #!/bin/bash
 
         cat <<'EOF' >> /etc/ecs/ecs.config
-        ECS_CLUSTER=${local.name}
+        ECS_CLUSTER=natscluster
         ECS_LOGLEVEL=debug
-        ECS_CONTAINER_INSTANCE_TAGS=${jsonencode(local.tags)}
         ECS_ENABLE_TASK_IAM_ROLE=true
         EOF
       EOT
@@ -122,9 +119,8 @@ module "autoscaling" {
         #!/bin/bash
 
         cat <<'EOF' >> /etc/ecs/ecs.config
-        ECS_CLUSTER=${local.name}
+        ECS_CLUSTER=natscluster
         ECS_LOGLEVEL=debug
-        ECS_CONTAINER_INSTANCE_TAGS=${jsonencode(local.tags)}
         ECS_ENABLE_TASK_IAM_ROLE=true
         ECS_ENABLE_SPOT_INSTANCE_DRAINING=true
         EOF
@@ -132,7 +128,7 @@ module "autoscaling" {
     }
   }
 
-  name = "${local.name}-${each.key}"
+  name = "natsasg"
 
   image_id      = jsondecode(data.aws_ssm_parameter.ecs_optimized_ami.value)["image_id"]
   instance_type = each.value.instance_type
@@ -166,6 +162,7 @@ module "autoscaling" {
 }
 
 resource "aws_ecs_task_definition" "task_definition" {
+  family = "nats-container"
   network_mode             = "awsvpc"
   requires_compatibilities = ["EC2"]
   task_role_arn            = "arn:aws:iam::850286438394:role/ecsTaskExecutionRole"
