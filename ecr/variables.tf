@@ -1,5 +1,5 @@
-variable "repositoryname"{
-    type = string
+variable "repositoryname" {
+  type = string
 }
 
 variable "region" {

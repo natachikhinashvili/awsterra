@@ -17,7 +17,7 @@ resource "aws_security_group" "ecs_security_group" {
 }
 resource "aws_security_group" "load_balancer" {
   vpc_id = var.vpc_id
-  
+
   ingress {
     from_port   = 80
     to_port     = 80

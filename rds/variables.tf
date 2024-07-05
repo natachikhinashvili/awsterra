@@ -1,15 +1,15 @@
 variable "subnetgroup" {
-    type = string
+  type = string
 }
 variable "securitygroup" {
-    type = list(string)
+  type = list(string)
 }
 variable "db_name" {
-    type = string
+  type = string
 }
 variable "username" {
-    type = string
+  type = string
 }
 variable "password" {
-    type = string
+  type = string
 }

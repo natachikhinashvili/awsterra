@@ -4,21 +4,21 @@ variable "security_group_ids" {
 }
 
 variable "subnet" {
-  type        = list(string)
+  type = list(string)
 }
 
 variable "vpc_id" {
-  type        = string
+  type = string
 }
 
 
 variable "repository_url" {
-  type        = string
+  type = string
 }
 
 
 variable "privatesubnet" {
-  type        = list(string)
+  type = list(string)
 }
 
 variable "aws_lb_target_group_arn" {

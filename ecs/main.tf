@@ -47,7 +47,7 @@ resource "aws_launch_template" "ecs_lt" {
   name_prefix   = "ecs-template"
   image_id      = jsondecode(data.aws_ssm_parameter.ecs_optimized_ami.value)["image_id"]
   instance_type = "t3.micro"
-  
+
   iam_instance_profile {
     name = "ecsInstanceRole"
   }
@@ -62,7 +62,7 @@ resource "aws_launch_template" "ecs_lt" {
 
   network_interfaces {
     associate_public_ip_address = true
-    security_groups = [var.security_group_ids]
+    security_groups             = [var.security_group_ids]
   }
 
   user_data = base64encode("#!/bin/bash\n echo ECS_CLUSTER=nats-cluster >> /etc/ecs/ecs.config")
@@ -70,19 +70,19 @@ resource "aws_launch_template" "ecs_lt" {
 
 
 resource "aws_autoscaling_group" "ecs_asg" {
- vpc_zone_identifier = var.privatesubnet
- desired_capacity    = 1
- max_size            = 1
- min_size            = 1
+  vpc_zone_identifier = var.privatesubnet
+  desired_capacity    = 1
+  max_size            = 1
+  min_size            = 1
 
- launch_template {
-   id      = aws_launch_template.ecs_lt.id
-   version = "$Latest"
- }
+  launch_template {
+    id      = aws_launch_template.ecs_lt.id
+    version = "$Latest"
+  }
 }
 
 resource "aws_ecs_capacity_provider" "ecs_capacity_provider" {
- name = "natscapacityprovider"
+  name = "natscapacityprovider"
 
   auto_scaling_group_provider {
     auto_scaling_group_arn = aws_autoscaling_group.ecs_asg.arn
@@ -103,27 +103,27 @@ resource "aws_ecs_cluster_capacity_providers" "ecs_cluster_capacity_providers" {
     base              = 1
     weight            = 100
     capacity_provider = aws_ecs_capacity_provider.ecs_capacity_provider.name
- }
+  }
 }
 
 resource "aws_ecs_task_definition" "task_definition" {
-  family = "worker"
+  family                   = "worker"
   network_mode             = "awsvpc"
   requires_compatibilities = ["EC2"]
-  task_role_arn = "arn:aws:iam::850286438394:role/ecsTaskExecutionRole"
-  execution_role_arn = "arn:aws:iam::850286438394:role/ecsTaskExecutionRole"
+  task_role_arn            = "arn:aws:iam::850286438394:role/ecsTaskExecutionRole"
+  execution_role_arn       = "arn:aws:iam::850286438394:role/ecsTaskExecutionRole"
   runtime_platform {
-   operating_system_family = "LINUX"
-   cpu_architecture        = "X86_64"
- }
+    operating_system_family = "LINUX"
+    cpu_architecture        = "X86_64"
+  }
 
   container_definitions = jsonencode([
     {
-      essential   = true
-      name        = "natscontainer"
+      essential = true
+      name      = "natscontainer"
       cpu       = 256
       memory    = 512
-      image       = "850286438394.dkr.ecr.eu-central-1.amazonaws.com/creed:latest"
+      image     = "850286438394.dkr.ecr.eu-central-1.amazonaws.com/creed:latest"
       portMappings = [
         {
           containerPort = 80
@@ -136,32 +136,32 @@ resource "aws_ecs_task_definition" "task_definition" {
 }
 
 resource "aws_ecs_service" "ecs_service" {
- name            = "nats-service"
- cluster         = aws_ecs_cluster.ecs_cluster.id
- task_definition = aws_ecs_task_definition.task_definition.arn 
- desired_count   = 1
+  name            = "nats-service"
+  cluster         = aws_ecs_cluster.ecs_cluster.id
+  task_definition = aws_ecs_task_definition.task_definition.arn
+  desired_count   = 1
 
- network_configuration {
-   subnets         = var.privatesubnet
-   security_groups = [var.security_group_ids]
- }
+  network_configuration {
+    subnets         = var.privatesubnet
+    security_groups = [var.security_group_ids]
+  }
 
- force_new_deployment = true
- placement_constraints {
-   type = "distinctInstance"
- }
+  force_new_deployment = true
+  placement_constraints {
+    type = "distinctInstance"
+  }
 
- capacity_provider_strategy {
-   capacity_provider = aws_ecs_capacity_provider.ecs_capacity_provider.name
-   base = 1
-   weight            = 100
- }
+  capacity_provider_strategy {
+    capacity_provider = aws_ecs_capacity_provider.ecs_capacity_provider.name
+    base              = 1
+    weight            = 100
+  }
 
- load_balancer {
-   target_group_arn = var.aws_lb_target_group_arn
-   container_name   = "natscontainer"
-   container_port   = 80
- }
+  load_balancer {
+    target_group_arn = var.aws_lb_target_group_arn
+    container_name   = "natscontainer"
+    container_port   = 80
+  }
 
- depends_on = [aws_autoscaling_group.ecs_asg]
+  depends_on = [aws_autoscaling_group.ecs_asg]
 }
