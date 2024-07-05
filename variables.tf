@@ -45,3 +45,6 @@ variable "cluster_name" {
 variable "template_name" {
   type = string
 }
+variable "instanceprofilename" {
+  type = string
+}

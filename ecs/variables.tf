@@ -45,3 +45,6 @@ variable "capacityprovidername" {
 variable "template_name" {
   type = string
 }
+variable "instanceprofilename" {
+  type = string
+}

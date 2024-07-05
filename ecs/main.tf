@@ -33,7 +33,7 @@ resource "aws_iam_role_policy_attachment" "ecr_policy_attachment" {
 }
 
 resource "aws_iam_instance_profile" "ecs_instance_profile" {
-  name = "ecs_instance_profile"
+  name = var.instanceprofilename
   role = aws_iam_role.ecs_instance_role.name
 }
 
