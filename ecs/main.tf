@@ -82,7 +82,7 @@ resource "aws_autoscaling_group" "ecs_asg" {
 }
 
 resource "aws_ecs_capacity_provider" "ecs_capacity_provider" {
-  name = "natscapacityprovider"
+  name = var.capacityprovidername
 
   auto_scaling_group_provider {
     auto_scaling_group_arn = aws_autoscaling_group.ecs_asg.arn
@@ -107,7 +107,7 @@ resource "aws_ecs_cluster_capacity_providers" "ecs_cluster_capacity_providers" {
 }
 
 resource "aws_ecs_task_definition" "task_definition" {
-  family                   = "worker"
+  family                   = var.container_name
   network_mode             = "awsvpc"
   requires_compatibilities = ["EC2"]
   task_role_arn            = "arn:aws:iam::850286438394:role/ecsTaskExecutionRole"
@@ -120,7 +120,7 @@ resource "aws_ecs_task_definition" "task_definition" {
   container_definitions = jsonencode([
     {
       essential = true
-      name      = "natscontainer"
+      name      = var.container_name
       cpu       = 256
       memory    = 512
       image     = "850286438394.dkr.ecr.eu-central-1.amazonaws.com/creed:latest"
@@ -136,7 +136,7 @@ resource "aws_ecs_task_definition" "task_definition" {
 }
 
 resource "aws_ecs_service" "ecs_service" {
-  name            = "nats-service"
+  name            = var.service_name
   cluster         = aws_ecs_cluster.ecs_cluster.id
   task_definition = aws_ecs_task_definition.task_definition.arn
   desired_count   = 1
@@ -159,7 +159,7 @@ resource "aws_ecs_service" "ecs_service" {
 
   load_balancer {
     target_group_arn = var.aws_lb_target_group_arn
-    container_name   = "natscontainer"
+    container_name   = var.container_name
     container_port   = 80
   }
 

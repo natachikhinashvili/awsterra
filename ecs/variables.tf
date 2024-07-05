@@ -25,3 +25,15 @@ variable "aws_lb_target_group_arn" {
   description = "target group arn"
   type        = string
 }
+
+variable "service_name" {
+  type = string
+}
+
+variable "container_name" {
+  type = string
+}
+
+variable "capacityprovidername" {
+  type = string
+}

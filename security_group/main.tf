@@ -15,6 +15,7 @@ resource "aws_security_group" "ecs_security_group" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
 resource "aws_security_group" "load_balancer" {
   vpc_id = var.vpc_id
 

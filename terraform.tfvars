@@ -1,8 +1,10 @@
 region         = "eu-central-1"
-bucket_name    = "natsbackends3"
 azs            = ["eu-central-1a", "eu-central-1b", "eu-central-1c"]
 publicsubnet   = "db-subnet-group-public"
-db_name        = "mydatabase"
 repositoryname = "natsrepo"
 vpcname        = "natsvpc"
 privatesubnet  = "db-subnet-group-private"
+container_name = "nats-container"
+service_name   = "nats-service"
+db_name        = "natsdb"
+capacityprovidername = "natscapacityprovider"

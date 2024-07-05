@@ -24,7 +24,7 @@ locals {
 
 module "ecr" {
   source         = "./ecr"
-  repositoryname = "natsrepo"
+  repositoryname = var.repositoryname
   region         = var.region
 }
 
@@ -51,6 +51,9 @@ module "ecs" {
   privatesubnet           = module.vpc.public_subnets
   subnet                  = module.vpc.public_subnets
   aws_lb_target_group_arn = module.load_balancer.aws_lb_target_group_arn
+  container_name = var.container_name
+  service_name = var.service_name
+  capacityprovidername = var.capacityprovidername
 }
 
 module "rds" {
@@ -58,9 +61,9 @@ module "rds" {
   depends_on    = [module.vpc]
   subnetgroup   = var.publicsubnet
   securitygroup = [module.security_group.rds_security_group_id]
-  db_name       = var.db_name
   username      = local.db_creds.username
   password      = local.db_creds.password
+  db_name       = var.db_name
 }
 module "load_balancer" {
   source            = "./alb"

@@ -1,5 +1,5 @@
 resource "aws_db_instance" "main" {
-  identifier             = "main-rds-instance"
+  identifier             = var.db_name
   allocated_storage      = 20
   engine                 = "mysql"
   engine_version         = "8.0.35"
