@@ -133,18 +133,18 @@ module "autoscaling" {
   image_id      = jsondecode(data.aws_ssm_parameter.ecs_optimized_ami.value)["image_id"]
   instance_type = each.value.instance_type
 
-  security_groups                 = [module.autoscaling_sg.security_group_id]
+  security_groups                 = [var.security_group_ids]
   user_data                       = base64encode(each.value.user_data)
   ignore_desired_capacity_changes = true
 
   create_iam_instance_profile = true
-  iam_role_name               = local.name
+  iam_role_name               = "natsasg"
   iam_role_policies = {
     AmazonEC2ContainerServiceforEC2Role = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
     AmazonSSMManagedInstanceCore        = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
   }
 
-  vpc_zone_identifier = module.vpc.private_subnets
+  vpc_zone_identifier = var.privatesubnet
   health_check_type   = "EC2"
   min_size            = 1
   max_size            = 5
