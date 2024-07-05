@@ -34,10 +34,7 @@ jobs:
       run: terraform init
 
     - name: Terraform Plan
-      env:
-          TF_VAR_DB_PASSWORD: ${{ secrets.TF_VAR_DB_PASSWORD }}
-          TF_VAR_DB_USERNAME: ${{ secrets.TF_VAR_DB_USERNAME }}
-      run: terraform plan -var="username=${{ env.TF_VAR_DB_USERNAME }}" -var="password=${{ env.TF_VAR_DB_PASSWORD }}"
+      run: terraform plan
 
     - name: Terraform Apply
       if: github.ref == 'refs/heads/"main"' && github.event_name == 'push'
