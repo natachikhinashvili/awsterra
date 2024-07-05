@@ -1,27 +1,3 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 2.7.0"
-    }
-  }
-  backend "s3" {
-    bucket = "natsbackend"
-    key    = "backend.tfstate"
-    region = "eu-central-1"
-  }
-}
-
-data "aws_secretsmanager_secret_version" "creds" {
-  secret_id = "database-creds"
-}
-
-locals {
-  db_creds = jsondecode(
-    data.aws_secretsmanager_secret_version.creds.secret_string
-  )
-}
-
 module "ecr" {
   source         = "./ecr"
   region         = var.region
@@ -38,6 +14,13 @@ module "security_group" {
   source            = "./security_group"
   security_group_id = module.security_group.security_group_id
   vpc_id            = module.vpc.vpc_id
+}
+
+module "load_balancer" {
+  source            = "./alb"
+  security_group_id = module.security_group.alb_security_group
+  vpc_id            = module.vpc.vpc_id
+  subnets           = module.vpc.public_subnet_group
 }
 
 module "ecs" {
@@ -57,10 +40,4 @@ module "rds" {
   securitygroup = [module.security_group.rds_security_group_id]
   username      = local.db_creds.username
   password      = local.db_creds.password
-}
-module "load_balancer" {
-  source            = "./alb"
-  security_group_id = module.security_group.alb_security_group
-  vpc_id            = module.vpc.vpc_id
-  subnets           = module.vpc.public_subnet_group
 }

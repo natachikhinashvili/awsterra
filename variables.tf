@@ -13,11 +13,3 @@ variable "publicsubnet" {
 variable "privatesubnet" {
   type = string
 }
-
-variable "username" {
-  type = string
-}
-
-variable "password" {
-  type = string
-}
