@@ -42,7 +42,6 @@ module "security_group" {
   vpc_id            = module.vpc.vpc_id
 }
 
-
 module "ecs" {
   source                  = "./ecs"
   security_group_ids      = module.security_group.security_group_id
