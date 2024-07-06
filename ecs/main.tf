@@ -2,12 +2,43 @@ data "aws_ssm_parameter" "ecs_optimized_ami" {
   name = "/aws/service/ecs/optimized-ami/amazon-linux-2/recommended"
 }
 
+resource "aws_iam_role" "ecs_instance_role" {
+  name = "ecs_instance_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Action = "sts:AssumeRole",
+      Effect = "Allow",
+      Principal = {
+        Service = "ec2.amazonaws.com"
+      }
+    }]
+  })
+}
+resource "aws_iam_role_policy_attachment" "ecs_attach" {
+  role       = aws_iam_role.ecs_instance_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
+}
+resource "aws_iam_role_policy_attachment" "ecs_instance_role_policy" {
+  role       = aws_iam_role.ecs_instance_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
+}
+
+resource "aws_iam_role_policy_attachment" "ecr_policy_attachment" {
+  role       = aws_iam_role.ecs_instance_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
+}
+resource "aws_iam_instance_profile" "ecs_instance_profile" {
+  name = "ecs_instance_profile"
+  role = aws_iam_role.ecs_instance_role.name
+}
 resource "aws_ecs_cluster" "ecs_cluster" {
   name = "natscluster"
 }
 
 resource "aws_launch_template" "ecs_lt" {
-  name_prefix   = "natstemplate"
+  name_prefix   = "ecs-template"
   image_id      = jsondecode(data.aws_ssm_parameter.ecs_optimized_ami.value)["image_id"]
   instance_type = "t3.large"
 
@@ -30,7 +61,7 @@ resource "aws_launch_template" "ecs_lt" {
 
   user_data = base64encode(<<-EOF
     #!/bin/bash
-    echo ECS_CLUSTER=nats-cluster >> /etc/ecs/ecs.config
+    echo ECS_CLUSTER=natscluster >> /etc/ecs/ecs.config
   EOF
   )
 }
@@ -169,16 +200,16 @@ resource "aws_ecs_task_definition" "task_definition" {
   execution_role_arn       = "arn:aws:iam::850286438394:role/ecsTaskExecutionRole"
   runtime_platform {
     operating_system_family = "LINUX"
-    cpu_architecture        = "ARM64"
+    cpu_architecture        = "X86_64"
   }
 
   container_definitions = jsonencode([
     {
-      essential = true
       name      = "nats-container"
-      cpu       = 256
-      memory    = 512
       image     = "850286438394.dkr.ecr.eu-central-1.amazonaws.com/creed:latest"
+      cpu       = 512
+      memory    = 1024
+      essential = true
       portMappings = [
         {
           containerPort = 80
