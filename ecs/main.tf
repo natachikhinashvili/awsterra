@@ -9,7 +9,7 @@ resource "aws_ecs_cluster" "ecs_cluster" {
 resource "aws_launch_template" "ecs_lt" {
   name_prefix   = "natstemplate"
   image_id      = jsondecode(data.aws_ssm_parameter.ecs_optimized_ami.value)["image_id"]
-  instance_type = "t3.micro"
+  instance_type = "t3.large"
 
   iam_instance_profile {
     name = "ecsInstanceRole"
@@ -169,7 +169,7 @@ resource "aws_ecs_task_definition" "task_definition" {
   execution_role_arn       = "arn:aws:iam::850286438394:role/ecsTaskExecutionRole"
   runtime_platform {
     operating_system_family = "LINUX"
-    cpu_architecture        = "X86_64"
+    cpu_architecture        = "ARM64"
   }
 
   container_definitions = jsonencode([

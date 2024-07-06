@@ -5,10 +5,13 @@ resource "random_password" "master"{
 }
 
 resource "aws_secretsmanager_secret" "password" {
-  name = "database-creds"
+    name = "database-creds"    
 }
 
 resource "aws_secretsmanager_secret_version" "password" {
-  secret_id = aws_secretsmanager_secret.password.id
-  secret_string = random_password.master.result
+    secret_id = aws_secretsmanager_secret.password.id
+    secret_string = random_password.master.result
+    lifecycle {
+        prevent_destroy = false
+    }
 }
