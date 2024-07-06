@@ -1,10 +1,10 @@
-FROM node:alpine
+FROM --platform=linux/amd64 node:alpine
 
 WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-RUN npm i
+RUN npm install --production
 
 COPY . .
 

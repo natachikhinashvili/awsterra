@@ -1,5 +1,5 @@
 data "aws_ssm_parameter" "ecs_optimized_ami" {
-  name = "/aws/service/ecs/optimized-ami/amazon-linux-2/recommended"
+  name = "/aws/service/ecs/optimized-ami/amazon-linux-2/arm64/recommended"
 }
 
 resource "aws_iam_role" "ecs_instance_role" {
@@ -40,7 +40,7 @@ resource "aws_ecs_cluster" "ecs_cluster" {
 resource "aws_launch_template" "ecs_lt" {
   name_prefix   = "ecs-template"
   image_id      = jsondecode(data.aws_ssm_parameter.ecs_optimized_ami.value)["image_id"]
-  instance_type = "t3.large"
+  instance_type = "t4g.large"
 
   iam_instance_profile {
     name = "ecsInstanceRole"
@@ -104,94 +104,6 @@ resource "aws_ecs_cluster_capacity_providers" "ecs_cluster_capacity_providers" {
   }
 }
 
-module "autoscaling" {
-  source  = "terraform-aws-modules/autoscaling/aws"
-  version = "~> 6.5"
-
-  for_each = {
-    
-    ex_1 = {
-      instance_type              = "t3.large"
-      use_mixed_instances_policy = false
-      mixed_instances_policy     = {}
-      user_data                  = <<-EOT
-        #!/bin/bash
-
-        cat <<'EOF' >> /etc/ecs/ecs.config
-        ECS_CLUSTER=natscluster
-        ECS_LOGLEVEL=debug
-        ECS_ENABLE_TASK_IAM_ROLE=true
-        EOF
-      EOT
-    }
-    
-    ex_2 = {
-      instance_type              = "t3.medium"
-      use_mixed_instances_policy = true
-      mixed_instances_policy = {
-        instances_distribution = {
-          on_demand_base_capacity                  = 0
-          on_demand_percentage_above_base_capacity = 0
-          spot_allocation_strategy                 = "price-capacity-optimized"
-        }
-
-        override = [
-          {
-            instance_type     = "m4.large"
-            weighted_capacity = "2"
-          },
-          {
-            instance_type     = "t3.large"
-            weighted_capacity = "1"
-          },
-        ]
-      }
-      user_data = <<-EOT
-        #!/bin/bash
-
-        cat <<'EOF' >> /etc/ecs/ecs.config
-        ECS_CLUSTER=natscluster
-        ECS_LOGLEVEL=debug
-        ECS_ENABLE_TASK_IAM_ROLE=true
-        ECS_ENABLE_SPOT_INSTANCE_DRAINING=true
-        EOF
-      EOT
-    }
-  }
-
-  name = "natsasg"
-
-  image_id      = jsondecode(data.aws_ssm_parameter.ecs_optimized_ami.value)["image_id"]
-  instance_type = each.value.instance_type
-
-  security_groups                 = [var.security_group_ids]
-  user_data                       = base64encode(each.value.user_data)
-  ignore_desired_capacity_changes = true
-
-  create_iam_instance_profile = true
-  iam_role_name               = "natsasg"
-  iam_role_policies = {
-    AmazonEC2ContainerServiceforEC2Role = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
-    AmazonSSMManagedInstanceCore        = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-  }
-
-  vpc_zone_identifier = var.privatesubnet
-  health_check_type   = "EC2"
-  min_size            = 1
-  max_size            = 5
-  desired_capacity    = 2
-
-  autoscaling_group_tags = {
-    AmazonECSManaged = true
-  }
-
-  protect_from_scale_in = true
-
-  use_mixed_instances_policy = each.value.use_mixed_instances_policy
-  mixed_instances_policy     = each.value.mixed_instances_policy
-
-}
-
 resource "aws_ecs_task_definition" "task_definition" {
   family = "nats-container"
   network_mode             = "awsvpc"
@@ -200,15 +112,15 @@ resource "aws_ecs_task_definition" "task_definition" {
   execution_role_arn       = "arn:aws:iam::850286438394:role/ecsTaskExecutionRole"
   runtime_platform {
     operating_system_family = "LINUX"
-    cpu_architecture        = "X86_64"
+    cpu_architecture        = "ARM64"
   }
 
   container_definitions = jsonencode([
     {
       name      = "nats-container"
-      image     = "850286438394.dkr.ecr.eu-central-1.amazonaws.com/creed:latest"
-      cpu       = 512
-      memory    = 1024
+      image     = "850286438394.dkr.ecr.eu-central-1.amazonaws.com/natsrepo:latest"
+      cpu       = 256
+      memory    = 512
       essential = true
       portMappings = [
         {
