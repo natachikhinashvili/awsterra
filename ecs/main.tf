@@ -1,5 +1,5 @@
 data "aws_ssm_parameter" "ecs_optimized_ami" {
-  name = "/aws/service/ecs/optimized-ami/amazon-linux-2/arm64/recommended"
+  name = "/aws/service/ecs/optimized-ami/amazon-linux-2/recommended"
 }
 
 resource "aws_iam_role" "ecs_instance_role" {
@@ -40,7 +40,7 @@ resource "aws_ecs_cluster" "ecs_cluster" {
 resource "aws_launch_template" "ecs_lt" {
   name_prefix   = "ecs-template"
   image_id      = jsondecode(data.aws_ssm_parameter.ecs_optimized_ami.value)["image_id"]
-  instance_type = "t4g.large"
+  instance_type = "t3.large"
 
   iam_instance_profile {
     name = "ecsInstanceRole"
@@ -112,7 +112,7 @@ resource "aws_ecs_task_definition" "task_definition" {
   execution_role_arn       = "arn:aws:iam::850286438394:role/ecsTaskExecutionRole"
   runtime_platform {
     operating_system_family = "LINUX"
-    cpu_architecture        = "ARM64"
+    cpu_architecture        = "X86_64"
   }
 
   container_definitions = jsonencode([
