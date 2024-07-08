@@ -6,10 +6,16 @@ resource "random_password" "master"{
 
 resource "aws_secretsmanager_secret" "password" {
     name = "database-creds"
-    recovery_window_in_days = 0
+    recovery_window_in_days = 0    
+    lifecycle {
+        ignore_changes = all
+    }
 }
 
 resource "aws_secretsmanager_secret_version" "password" {
     secret_id = aws_secretsmanager_secret.password.id
     secret_string = random_password.master.result
+    lifecycle {
+        ignore_changes = all
+    }
 }
