@@ -42,5 +42,4 @@ jobs:
 
     - name: Terraform Apply
       with:
-        context: .
       run: terraform apply -auto-approve -input=false
