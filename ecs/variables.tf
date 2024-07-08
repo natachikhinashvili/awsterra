@@ -11,10 +11,6 @@ variable "vpc_id" {
 }
 
 
-variable "repository_url" {
-  type = string
-}
-
 
 variable "privatesubnet" {
   type = list(string)
