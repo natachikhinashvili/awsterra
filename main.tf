@@ -2,11 +2,6 @@ module "secretsmanager" {
   source        = "./secretsmanager"
 }
 
-#module "ecr" {
-#  source         = "./ecr"
-#  region         = var.region
-#}
-
 module "vpc" {
   source        = "./vpc"
   publicsubnet  = var.publicsubnet
@@ -31,7 +26,6 @@ module "ecs" {
   source                  = "./ecs"
   security_group_ids      = module.security_group.security_group_id
   vpc_id                  = module.vpc.vpc_id
-  #repository_url          = "850286438394.dkr.ecr.eu-central-1.amazonaws.com/natsrepo:latest"
   privatesubnet           = module.vpc.public_subnets
   subnet                  = module.vpc.public_subnets
   aws_lb_target_group_arn = module.load_balancer.aws_lb_target_group_arn

@@ -6,6 +6,9 @@ resource "random_password" "master"{
 
 resource "aws_secretsmanager_secret" "password" {
     name = "database-creds"    
+    lifecycle {
+        ignore_changes = []
+    }
 }
 
 resource "aws_secretsmanager_secret_version" "password" {
