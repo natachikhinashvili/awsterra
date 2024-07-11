@@ -1,7 +1,3 @@
-module "secretsmanager" {
-  source        = "./secretsmanager"
-}
-
 module "vpc" {
   source        = "./vpc"
   publicsubnet  = var.publicsubnet
@@ -37,5 +33,4 @@ module "rds" {
   subnetgroup   = var.publicsubnet
   securitygroup = [module.security_group.rds_security_group_id]
   username      = "admin"
-  password      = local.db_creds.password
 }
