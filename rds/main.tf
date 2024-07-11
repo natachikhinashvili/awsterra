@@ -31,7 +31,7 @@ resource "random_id" "id" {
 }
 
 resource "aws_secretsmanager_secret" "password" {
-  name = "core-${var.environment}-password-${random_id.id.hex}"
+  name = "${random_id.id.hex}"
 }
 
 resource "aws_secretsmanager_secret_version" "password" {
