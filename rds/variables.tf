@@ -7,9 +7,6 @@ variable "securitygroup" {
 variable "username" {
   type = string
 }
-variable "password" {
-  type = string
-}
 variable "db_name" {
   type = string
   default = "natsdb"
